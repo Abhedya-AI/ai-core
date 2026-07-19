@@ -1,15 +1,15 @@
 """
-Neo4j connection manager.
+neo4j.py — Neo4j graph database connection manager.
 
-Exposes:
+Public interface:
     get_driver()    — returns the singleton Neo4j driver
-    close_driver()  — cleanly closes the driver (called on shutdown)
+    close_driver()  — cleanly closes the driver (call on shutdown)
     check_health()  — returns True if Neo4j is reachable
 """
 
 from neo4j import GraphDatabase, Driver
 
-from app.core.config.settings import database
+from app.core.config import settings
 from app.core.logger import get_logger
 
 log = get_logger("Neo4j")
@@ -18,20 +18,21 @@ _driver: Driver | None = None
 
 
 def get_driver() -> Driver:
-    """Return the singleton Neo4j driver, creating it if necessary."""
+    """Return the singleton Neo4j driver, creating it on first call."""
     global _driver
     if _driver is None:
         _driver = GraphDatabase.driver(
-            database.neo4j_uri,
-            auth=(database.neo4j_username, database.neo4j_password),
-            connection_timeout=3,
+            settings.neo4j.uri,
+            auth=(settings.neo4j.username, settings.neo4j.password),
+            max_connection_pool_size=settings.neo4j.max_connection_pool_size,
+            connection_timeout=settings.neo4j.connection_timeout,
         )
-        log.info(f"Driver created → {database.neo4j_uri}")
+        log.info(f"Driver created → {settings.neo4j.uri}")
     return _driver
 
 
 def close_driver() -> None:
-    """Close the Neo4j driver. Call this during application shutdown."""
+    """Close the Neo4j driver. Call during application shutdown."""
     global _driver
     if _driver is not None:
         _driver.close()

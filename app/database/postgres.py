@@ -1,33 +1,35 @@
 """
-PostgreSQL connection manager.
+postgres.py — PostgreSQL connection manager.
 
-Exposes:
-    engine          — SQLAlchemy engine (sync)
+Public interface:
+    engine          — SQLAlchemy sync engine
     SessionLocal    — session factory
-    Base            — declarative base for models
-    get_db()        — FastAPI dependency
+    Base            — declarative base for ORM models
+    get_db()        — FastAPI dependency (yields a session)
     check_health()  — returns True if Postgres is reachable
 """
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.core.config.settings import database
+from app.core.config import settings
 from app.core.logger import get_logger
 
 log = get_logger("PostgreSQL")
 
 engine = create_engine(
-    database.postgres_url,
+    settings.database.url,
     pool_pre_ping=True,
-    connect_args={"connect_timeout": 3},
+    pool_size=settings.database.pool_size,
+    max_overflow=settings.database.max_overflow,
+    connect_args={"connect_timeout": settings.database.connect_timeout},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
 def get_db():
-    """FastAPI dependency: yields a database session and closes it after use."""
+    """FastAPI dependency: yields a DB session and ensures it is closed."""
     db = SessionLocal()
     try:
         yield db
@@ -36,7 +38,7 @@ def get_db():
 
 
 def check_health() -> bool:
-    """Return True if PostgreSQL is reachable, False otherwise."""
+    """Return True if PostgreSQL is reachable via a lightweight query."""
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))

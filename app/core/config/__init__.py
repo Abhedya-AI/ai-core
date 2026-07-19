@@ -1,34 +1,30 @@
 """
-ABHEDYA Configuration Package.
+ABHEDYA Configuration Package — public API.
 
-Import pattern used throughout the project:
+The only import rule for the entire project:
 
-    from app.core.config import settings          # App-level settings
-    from app.core.config import database          # DB connection settings
-    from app.core.config import llm               # LLM provider settings
-    from app.core.config import security          # Auth/CORS settings
-    from app.core.config import logging_config    # Logging settings
-    from app.core.config import kafka             # Event streaming settings
+    from app.core.config import settings
 
-No module should ever call os.getenv() or load .env directly.
+    settings.app.name
+    settings.app.is_production
+    settings.database.url
+    settings.database.postgres_url
+    settings.neo4j.uri
+    settings.redis.url
+    settings.llm.provider
+    settings.llm.active_api_key
+    settings.llm.active_model
+    settings.kafka.enabled
+    settings.logging.level
+    settings.security.secret_key
+    settings.vector_store.index_path
+
+Nobody should ever use:
+    os.getenv(...)
+    dotenv.load_dotenv(...)
+    open(".env")
 """
 
-from app.core.config.settings import (
-    settings,
-    database,
-    llm,
-    security,
-    logging_config,
-)
-from app.core.config.kafka import KafkaSettings
+from app.core.config.settings import Settings, settings
 
-kafka = KafkaSettings()
-
-__all__ = [
-    "settings",
-    "database",
-    "llm",
-    "security",
-    "logging_config",
-    "kafka",
-]
+__all__ = ["settings", "Settings"]
