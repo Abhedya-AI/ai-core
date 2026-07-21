@@ -1,0 +1,25 @@
+export const ROUTES = {
+  auth: {
+    login: '/login',
+    forgotPassword: '/forgot-password',
+    resetPassword: '/reset-password',
+    twoFactor: '/two-factor',
+    sessionExpired: '/session-expired',
+    unauthorized: '/unauthorized',
+  },
+  dashboard: {
+    home: '/',
+    analytics: '/analytics',
+    alerts: '/alerts',
+    sensors: '/sensors',
+    workers: '/workers',
+    permits: '/permits',
+    digitalTwin: '/digital-twin',
+    knowledgeGraph: '/knowledge-graph',
+    maintenance: '/maintenance',
+    compliance: '/compliance',
+    reports: '/reports',
+    settings: '/settings',
+    emergency: '/emergency',
+  },
+} as const;

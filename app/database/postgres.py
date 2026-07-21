@@ -20,9 +20,7 @@ log = get_logger("PostgreSQL")
 engine = create_engine(
     settings.database.url,
     pool_pre_ping=True,
-    pool_size=settings.database.pool_size,
-    max_overflow=settings.database.max_overflow,
-    connect_args={"connect_timeout": settings.database.connect_timeout},
+    connect_args={"connect_timeout": 3},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

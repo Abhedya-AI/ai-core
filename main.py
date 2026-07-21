@@ -34,9 +34,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.security.allowed_origins,
-    allow_credentials=settings.security.allow_credentials,
-    allow_methods=settings.security.allowed_methods,
-    allow_headers=settings.security.allowed_headers,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ async def root():
         "name": settings.app.name,
         "version": "1.0.0",
         "status": "running",
-        "environment": settings.app.env,
+        "environment": settings.app.environment,
         "docs": "/docs",
     }
 

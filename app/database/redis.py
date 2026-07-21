@@ -26,9 +26,8 @@ def get_client() -> redis_lib.Redis:
             password=settings.redis.password,
             db=settings.redis.db,
             decode_responses=True,
-            socket_timeout=settings.redis.socket_timeout,
-            socket_connect_timeout=settings.redis.socket_connect_timeout,
-            max_connections=settings.redis.max_connections,
+            socket_timeout=3,
+            socket_connect_timeout=3,
         )
         log.info(f"Client created → {settings.redis.host}:{settings.redis.port}")
     return _client

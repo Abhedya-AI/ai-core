@@ -14,7 +14,7 @@ def test_root_endpoint(client: TestClient):
     resp = client.get("/")
     assert resp.status_code == 200
     body = resp.json()
-    assert body["name"] == "ABHEDYA"
+    assert body["name"] == "ABHEDYA AI Core"
     assert body["status"] == "running"
     assert body["version"] == "1.0.0"
 

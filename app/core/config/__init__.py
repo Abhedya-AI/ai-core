@@ -1,30 +1,8 @@
-"""
-ABHEDYA Configuration Package — public API.
+from app.core.config.settings import Settings, get_settings
 
-The only import rule for the entire project:
+settings = get_settings()
 
-    from app.core.config import settings
-
-    settings.app.name
-    settings.app.is_production
-    settings.database.url
-    settings.database.postgres_url
-    settings.neo4j.uri
-    settings.redis.url
-    settings.llm.provider
-    settings.llm.active_api_key
-    settings.llm.active_model
-    settings.kafka.enabled
-    settings.logging.level
-    settings.security.secret_key
-    settings.vector_store.index_path
-
-Nobody should ever use:
-    os.getenv(...)
-    dotenv.load_dotenv(...)
-    open(".env")
-"""
-
-from app.core.config.settings import Settings, settings
-
-__all__ = ["settings", "Settings"]
+__all__ = [
+    "Settings",
+    "settings",
+]
