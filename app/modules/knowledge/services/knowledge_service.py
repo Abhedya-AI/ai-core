@@ -16,10 +16,13 @@ from app.modules.knowledge.domain.entities.sensor import Sensor
 from app.modules.knowledge.domain.entities.worker import Worker
 from app.modules.knowledge.domain.entities.zone import Zone
 from app.modules.knowledge.domain.relationships import RelationshipType
+from app.modules.knowledge.services.emergency_service import EmergencyService
 from app.modules.knowledge.services.equipment_service import EquipmentService
 from app.modules.knowledge.services.graph_service import GraphService
 from app.modules.knowledge.services.hazard_service import HazardService
 from app.modules.knowledge.services.incident_service import IncidentService
+from app.modules.knowledge.services.maintenance_service import MaintenanceService
+from app.modules.knowledge.services.notification_service import NotificationService
 from app.modules.knowledge.services.permit_service import PermitService
 from app.modules.knowledge.services.sensor_service import SensorService
 from app.modules.knowledge.services.worker_service import WorkerService
@@ -43,6 +46,9 @@ class KnowledgeService:
         hazard_svc: HazardService | None = None,
         incident_svc: IncidentService | None = None,
         permit_svc: PermitService | None = None,
+        maintenance_svc: MaintenanceService | None = None,
+        emergency_svc: EmergencyService | None = None,
+        notification_svc: NotificationService | None = None,
         graph_svc: GraphService | None = None,
     ) -> None:
         self.workers = worker_svc or WorkerService()
@@ -51,6 +57,9 @@ class KnowledgeService:
         self.hazards = hazard_svc or HazardService()
         self.incidents = incident_svc or IncidentService()
         self.permits = permit_svc or PermitService()
+        self.maintenance = maintenance_svc or MaintenanceService()
+        self.emergency = emergency_svc or EmergencyService()
+        self.notifications = notification_svc or NotificationService()
         self.graph = graph_svc or GraphService()
 
     async def report_hazard_on_equipment(

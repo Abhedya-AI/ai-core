@@ -106,3 +106,29 @@ async def test_knowledge_facade_workflow():
     assert res["id"] == "H-1"
     mock_hazard_svc.report_hazard.assert_called_once_with(hazard)
     mock_graph_svc.connect_entities.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_maintenance_emergency_notification_services():
+    """Verify Maintenance, Emergency, and Notification services."""
+    from app.modules.knowledge.domain.entities import EmergencyPlan, Maintenance, Notification
+    from app.modules.knowledge.services import EmergencyService, MaintenanceService, NotificationService
+
+    mock_repo = AsyncMock()
+    mock_repo.create_node.return_value = {"id": "M-1"}
+
+    m_svc = MaintenanceService(repository=mock_repo)
+    maint = Maintenance(title="Valve Inspection", equipment_id="EQ-1", assigned_worker_id="W-1", task_description="Inspect valve", scheduled_date=datetime.now(tz=timezone.utc))
+    m_res = await m_svc.schedule_maintenance(maint)
+    assert m_res["id"] == "M-1"
+
+    e_svc = EmergencyService(repository=mock_repo)
+    plan = EmergencyPlan(title="Gas Leak Plan", emergency_type="GAS_LEAK", zone_ids=["Z-1"])
+    e_res = await e_svc.trigger_emergency_plan(plan)
+    assert e_res["id"] == "M-1"
+
+    n_svc = NotificationService(repository=mock_repo)
+    notif = Notification(title="Evacuation Alert", recipient_worker_id="W-1", message="Evacuate Zone 1 immediately")
+    n_res = await n_svc.send_notification(notif)
+    assert n_res["id"] == "M-1"
+
