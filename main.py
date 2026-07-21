@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.lifespan import lifespan
+from app.core.logging.middleware import RequestLoggingMiddleware
 from app.api.v1.health import router as health_router
 
 # ── Application ────────────────────────────────────────────────────────────────
@@ -31,6 +32,9 @@ app = FastAPI(
 )
 
 # ── Middleware ─────────────────────────────────────────────────────────────────
+# Order matters: RequestLoggingMiddleware must wrap everything to capture
+# the full request/response cycle including CORS and error handling.
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.security.allowed_origins,

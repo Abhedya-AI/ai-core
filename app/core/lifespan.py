@@ -1,34 +1,45 @@
 """
-Application lifespan manager.
+lifespan.py — FastAPI application lifespan manager.
 
-Handles startup and shutdown events using the modern FastAPI lifespan pattern
+Handles startup and shutdown using the modern asynccontextmanager pattern
 (replaces deprecated @app.on_event).
+
+Startup order:
+  1. configure_logging()   — logging system must be first
+  2. Database connections  — Postgres, Neo4j, Redis checked
+  3. Application ready
+
+Shutdown order:
+  1. Close Neo4j driver
+  2. shutdown_logging()    — flush and close log files last
 """
 
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.core.logger import get_logger
+from app.core.logging import configure_logging, get_logger
+from app.core.logging.logger import shutdown_logging
 
-log = get_logger("Lifespan")
+# configure_logging() called before any logger is created
+configure_logging()
+
+log = get_logger("abhedya.lifespan")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    FastAPI lifespan context manager.
+    """FastAPI lifespan context manager."""
 
-    Startup:  initialise resources
-    Shutdown: cleanly release resources
-    """
-    # ── Startup ───────────────────────────────────────────────────────────────
+    # ── Startup ────────────────────────────────────────────────────────────────
     log.info("ABHEDYA starting up…")
 
     yield  # application runs here
 
-    # ── Shutdown ──────────────────────────────────────────────────────────────
+    # ── Shutdown ───────────────────────────────────────────────────────────────
     log.info("ABHEDYA shutting down…")
 
     from app.database.neo4j import close_driver
     close_driver()
+
+    shutdown_logging()
