@@ -1,0 +1,3 @@
+from app.modules.agents.risk.risk_agent import RiskAgent
+
+__all__ = ["RiskAgent"]
