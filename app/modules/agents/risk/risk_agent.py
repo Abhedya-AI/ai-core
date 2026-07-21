@@ -3,6 +3,7 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
+from app.modules.agents.core.types import Capability
 from app.modules.knowledge.graph_intelligence import IntelligenceService
 
 
@@ -10,7 +11,9 @@ class RiskAgent(BaseAgent):
     """Specialized agent for hazard scoring, risk propagation, and critical asset detection."""
 
     name: str = "RiskAgent"
+    version: str = "1.0.0"
     description: str = "Calculates hazard severity, risk propagation, and worker exposure."
+    capabilities: list[Capability] = [Capability.RISK_ANALYSIS, Capability.GRAPH_SEARCH]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return True

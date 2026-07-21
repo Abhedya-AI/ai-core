@@ -3,13 +3,17 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
+from app.modules.agents.core.events import AgentDomainEvent
+from app.modules.agents.core.types import Capability
 
 
 class EmergencyAgent(BaseAgent):
     """Specialized agent formulating structured emergency evacuation and isolation plans."""
 
     name: str = "EmergencyAgent"
+    version: str = "1.0.0"
     description: str = "Generates evacuation routes, isolation procedures, and emergency plans."
+    capabilities: list[Capability] = [Capability.EMERGENCY]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return True
@@ -28,7 +32,7 @@ class EmergencyAgent(BaseAgent):
             confidence=0.99,
             evidence=[f"Activated Emergency Plan EP-03 for {zone_id}"],
             recommendations=actions,
-            events=[{"topic": "EMERGENCY_ALERT_TRIGGERED", "payload": {"zone_id": zone_id, "plan": "EP-03"}}],
+            events=[AgentDomainEvent(event_type="EMERGENCY_ALERT_TRIGGERED", agent_name=self.name, payload={"zone_id": zone_id, "plan": "EP-03"}, trace_id=context.trace_id)],
             output_data={"zone_id": zone_id, "emergency_plan": "EP-03", "actions": actions},
             explanation=f"Emergency Agent generated actionable response plan EP-03 for '{zone_id}'.",
         )

@@ -3,13 +3,17 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
+from app.modules.agents.core.events import AgentDomainEvent
+from app.modules.agents.core.types import Capability
 
 
 class VisionAgent(BaseAgent):
     """Specialized agent processing computer vision, CCTV feeds, and PPE compliance."""
 
     name: str = "VisionAgent"
+    version: str = "1.0.0"
     description: str = "Evaluates CCTV video streams, PPE compliance, and visual hazard detections."
+    capabilities: list[Capability] = [Capability.VISION]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return "vision" in context.query.lower() or "camera" in context.query.lower()
@@ -24,7 +28,7 @@ class VisionAgent(BaseAgent):
             confidence=0.94,
             evidence=[f"Camera '{camera_id}' detected: {', '.join(detections)}"],
             recommendations=["Issue safety warning to unhelmeted worker", "Inspect smoke detection sensor in Zone B"],
-            events=[{"topic": "HAZARD_DETECTED", "payload": {"camera_id": camera_id, "detections": detections}}],
+            events=[AgentDomainEvent(event_type="HAZARD_DETECTED", agent_name=self.name, payload={"camera_id": camera_id, "detections": detections}, trace_id=context.trace_id)],
             output_data={"camera_id": camera_id, "detections": detections},
             explanation=f"CCTV Camera '{camera_id}' visual analysis detected {len(detections)} safety anomalies.",
         )

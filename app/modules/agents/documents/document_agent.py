@@ -3,13 +3,16 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
+from app.modules.agents.core.types import Capability
 
 
 class DocumentAgent(BaseAgent):
     """Specialized agent retrieving, summarizing, and formatting safety manuals and SOP documents."""
 
     name: str = "DocumentAgent"
+    version: str = "1.0.0"
     description: str = "Retrieves and summarizes safety manuals, SOPs, and inspection reports."
+    capabilities: list[Capability] = [Capability.DOCUMENT_SEARCH]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return True

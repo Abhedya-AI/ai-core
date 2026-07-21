@@ -3,13 +3,16 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
+from app.modules.agents.core.types import Capability
 
 
 class PredictionAgent(BaseAgent):
     """Specialized agent evaluating predictive models for equipment failure and risk forecasts."""
 
     name: str = "PredictionAgent"
+    version: str = "1.0.0"
     description: str = "Evaluates AI predictive failure forecasts and remaining useful life (RUL)."
+    capabilities: list[Capability] = [Capability.PREDICTION]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return True

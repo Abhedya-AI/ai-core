@@ -1,5 +1,23 @@
 from app.modules.agents.compliance import ComplianceAgent
-from app.modules.agents.core import AgentContext, AgentOrchestrator, AgentRegistry, AgentResult, BaseAgent
+from app.modules.agents.core import (
+    AgentContext,
+    AgentDomainEvent,
+    AgentExecutionMemory,
+    AgentLifecycleState,
+    AgentOrchestrator,
+    AgentRegistry,
+    AgentResult,
+    AgentRuntimeError,
+    AgentTelemetry,
+    BaseAgent,
+    Capability,
+    ExecutionPlan,
+    ExecutionStage,
+    LifecycleTracker,
+    NonRetryableAgentException,
+    RetryableAgentException,
+    match_capabilities,
+)
 from app.modules.agents.documents import DocumentAgent
 from app.modules.agents.emergency import EmergencyAgent
 from app.modules.agents.memory import AgentMemoryService
@@ -16,6 +34,18 @@ __all__ = [
     "BaseAgent",
     "AgentRegistry",
     "AgentOrchestrator",
+    "AgentLifecycleState",
+    "Capability",
+    "match_capabilities",
+    "AgentRuntimeError",
+    "RetryableAgentException",
+    "NonRetryableAgentException",
+    "AgentDomainEvent",
+    "AgentTelemetry",
+    "LifecycleTracker",
+    "AgentExecutionMemory",
+    "ExecutionStage",
+    "ExecutionPlan",
     "SupervisorAgent",
     "RiskAgent",
     "VisionAgent",

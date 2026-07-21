@@ -3,7 +3,8 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
-from app.modules.agents.core.orchestrator import ExecutionPlan, ExecutionStage
+from app.modules.agents.core.execution_plan import ExecutionPlan, ExecutionStage
+from app.modules.agents.core.types import Capability
 from app.modules.graphrag.query.parser import QueryParser
 
 
@@ -15,7 +16,13 @@ class SupervisorAgent(BaseAgent):
     """
 
     name: str = "SupervisorAgent"
+    version: str = "1.0.0"
     description: str = "Analyzes query intent and plans multi-agent execution stages."
+    capabilities: list[Capability] = [
+        Capability.GRAPH_SEARCH,
+        Capability.DOCUMENT_SEARCH,
+        Capability.RISK_ANALYSIS,
+    ]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return True
@@ -46,16 +53,41 @@ class SupervisorAgent(BaseAgent):
         stage4_agents = ["NotificationAgent"]
 
         stages = [
-            ExecutionStage(stage_name="Analysis", agent_names=stage1_agents),
+            ExecutionStage(stage_name="Analysis", agent_names=stage1_agents, allow_parallel=True),
         ]
 
         if stage2_agents:
-            stages.append(ExecutionStage(stage_name="RootCauseInvestigation", agent_names=stage2_agents))
+            stages.append(
+                ExecutionStage(
+                    stage_name="RootCauseInvestigation",
+                    agent_names=stage2_agents,
+                    depends_on_stages=["Analysis"],
+                    allow_parallel=False,
+                )
+            )
 
-        stages.append(ExecutionStage(stage_name="EmergencyPlanning", agent_names=stage3_agents))
-        stages.append(ExecutionStage(stage_name="NotificationDispatch", agent_names=stage4_agents))
+        stages.append(
+            ExecutionStage(
+                stage_name="EmergencyPlanning",
+                agent_names=stage3_agents,
+                depends_on_stages=["Analysis"],
+                allow_parallel=False,
+            )
+        )
+        stages.append(
+            ExecutionStage(
+                stage_name="NotificationDispatch",
+                agent_names=stage4_agents,
+                depends_on_stages=["EmergencyPlanning"],
+                allow_parallel=False,
+            )
+        )
 
-        return ExecutionPlan(task=context.query, stages=stages)
+        return ExecutionPlan(
+            task_id=context.task_id,
+            task_statement=context.query,
+            stages=stages,
+        )
 
     async def _run(self, context: AgentContext) -> AgentResult:
         plan = await self.create_plan(context)

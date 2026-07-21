@@ -3,6 +3,7 @@
 from app.modules.agents.core.agent_context import AgentContext
 from app.modules.agents.core.agent_result import AgentResult
 from app.modules.agents.core.base_agent import BaseAgent
+from app.modules.agents.core.types import Capability
 from app.modules.knowledge.graph_intelligence import IntelligenceService
 
 
@@ -10,7 +11,9 @@ class RootCauseAgent(BaseAgent):
     """Specialized agent performing root cause discovery and causal chain reconstruction."""
 
     name: str = "RootCauseAgent"
+    version: str = "1.0.0"
     description: str = "Reconstructs causal failure chains and discovers root causes."
+    capabilities: list[Capability] = [Capability.ROOT_CAUSE, Capability.GRAPH_SEARCH]
 
     async def can_handle(self, context: AgentContext) -> bool:
         return "incident" in context.query.lower() or "cause" in context.query.lower()
