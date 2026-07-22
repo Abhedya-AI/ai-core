@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.lifespan import lifespan
 from app.core.logging.middleware import RequestLoggingMiddleware
 from app.api.v1.health import router as health_router
+from app.modules.vision.api.routes import router as vision_router
 
 # ── Application ────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -47,6 +48,10 @@ app.add_middleware(
 app.include_router(health_router)                             # GET /health
 app.include_router(                                           # GET /api/v1/health
     health_router,
+    prefix=settings.app.api_prefix,
+)
+app.include_router(                                           # Vision Intelligence — Module 1
+    vision_router,
     prefix=settings.app.api_prefix,
 )
 
