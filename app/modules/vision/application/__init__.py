@@ -13,7 +13,7 @@ from app.modules.vision.application.publish_event import (
 )
 from app.modules.vision.application.save_detection import (
     SaveDetectionError,
-    save_vision_event,
+    save_detection,
 )
 
 __all__ = [
@@ -22,6 +22,6 @@ __all__ = [
     "RiskEngine",
     "publish_vision_event",
     "PublishEventError",
-    "save_vision_event",
+    "save_detection",
     "SaveDetectionError",
 ]
