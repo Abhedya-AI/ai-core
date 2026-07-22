@@ -6,9 +6,9 @@ from app.modules.vision.schemas.request import AnalyzeFrameRequest, ListEventsRe
 from app.modules.vision.schemas.response import (
     AnalyzeFrameResponse,
     BoundingBoxSchema,
+    CameraSchema,
     DetectionSchema,
     GetEventResponse,
-    HazardSchema,
     ListEventsResponse,
     RiskScoreSchema,
     VisionEventSchema,
@@ -24,7 +24,7 @@ __all__ = [
     "GetEventResponse",
     "VisionEventSchema",
     "DetectionSchema",
-    "HazardSchema",
+    "CameraSchema",
     "RiskScoreSchema",
     "BoundingBoxSchema",
 ]
