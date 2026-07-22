@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 from app.modules.vision.domain.enums import HazardType, RiskLevel
+from app.modules.vision.domain.enums.detection_status import DetectionStatus
 from app.modules.vision.domain.value_objects import BoundingBox, RiskScore
 
 
@@ -43,15 +44,15 @@ class Detection:
 
     Attributes
     ──────────
-    id          Unique identifier (UUID string).
-    hazard_type The classified hazard category.
-    confidence  Model confidence score ∈ [0, 1].
-    bounding_box
-                Normalised location in the image.
-    timestamp   When this detection was produced.
-    frame_id    Caller-supplied identifier for the source frame.
-    camera_id   Identifier of the camera that captured the frame.
-    image_path  Optional path to the persisted frame image.
+    id              Unique identifier (UUID string).
+    hazard_type     The classified hazard category.
+    confidence      Model confidence score ∈ [0, 1].
+    bounding_box    Normalised location in the image.
+    frame_id        Caller-supplied identifier for the source frame.
+    camera_id       Identifier of the camera that captured the frame.
+    status          Lifecycle state of this detection (default: PENDING).
+    timestamp       When this detection was produced.
+    image_path      Optional path to the persisted frame image.
     """
 
     hazard_type:  HazardType
@@ -60,15 +61,18 @@ class Detection:
     frame_id:     str
     camera_id:    str
 
-    id:           str      = field(default_factory=_new_uuid)
-    timestamp:    datetime = field(default_factory=_now_utc)
-    image_path:   str | None = field(default=None)
+    id:         str             = field(default_factory=_new_uuid)
+    status:     DetectionStatus = field(default=DetectionStatus.PENDING)
+    timestamp:  datetime        = field(default_factory=_now_utc)
+    image_path: str | None      = field(default=None)
 
     def __post_init__(self) -> None:
         if not (0.0 <= self.confidence <= 1.0):
             raise ValueError(
                 f"Detection.confidence must be in [0, 1]; got {self.confidence}"
             )
+
+    # ── Domain helpers ────────────────────────────────────────────────────────
 
     @property
     def is_high_confidence(self) -> bool:
@@ -83,6 +87,24 @@ class Detection:
             HazardType.CHEMICAL_SPILL,
             HazardType.FALL,
         }
+
+    @property
+    def is_pending(self) -> bool:
+        return self.status == DetectionStatus.PENDING
+
+    @property
+    def is_verified(self) -> bool:
+        return self.status == DetectionStatus.VERIFIED
+
+    def verify(self) -> "Detection":
+        """Return a new Detection with status=VERIFIED (immutable-style)."""
+        from dataclasses import replace
+        return replace(self, status=DetectionStatus.VERIFIED)
+
+    def reject(self) -> "Detection":
+        """Return a new Detection with status=REJECTED."""
+        from dataclasses import replace
+        return replace(self, status=DetectionStatus.REJECTED)
 
 
 # ── Hazard ────────────────────────────────────────────────────────────────────
@@ -124,7 +146,7 @@ class Hazard:
 
     @property
     def requires_immediate_action(self) -> bool:
-        return self.risk_level >= RiskLevel.HIGH
+        return self.risk_level in {RiskLevel.HIGH, RiskLevel.CRITICAL}
 
 
 # ── VisionEvent ───────────────────────────────────────────────────────────────
@@ -152,8 +174,7 @@ class VisionEvent:
     hazards         Domain hazards derived from the detections.
     risk_score      Aggregated risk score for the frame.
     image_path      Optional persisted image path.
-    location        Optional free-text or coordinate string
-                    (populated by caller or geospatial module).
+    location        Optional free-text or coordinate string.
     metadata        Extensible key-value bag for future use.
     """
 
@@ -163,11 +184,11 @@ class VisionEvent:
     hazards:     list[Hazard]
     risk_score:  RiskScore
 
-    event_id:    str              = field(default_factory=_new_uuid)
-    timestamp:   datetime         = field(default_factory=_now_utc)
-    image_path:  str | None       = field(default=None)
-    location:    str | None       = field(default=None)
-    metadata:    dict             = field(default_factory=dict)
+    event_id:    str        = field(default_factory=_new_uuid)
+    timestamp:   datetime   = field(default_factory=_now_utc)
+    image_path:  str | None = field(default=None)
+    location:    str | None = field(default=None)
+    metadata:    dict       = field(default_factory=dict)
 
     # ── Convenience accessors ─────────────────────────────────────────────────
 
@@ -181,7 +202,7 @@ class VisionEvent:
 
     @property
     def is_critical(self) -> bool:
-        return self.risk_score.level >= RiskLevel.CRITICAL
+        return self.risk_score.is_critical
 
     @property
     def actionable_hazards(self) -> list[Hazard]:
@@ -200,5 +221,5 @@ class VisionEvent:
             f"camera={self.camera_id} "
             f"detections={self.detection_count} "
             f"hazards={self.hazard_count} "
-            f"risk={self.risk_score.level.value}({self.risk_score.value:.2f})"
+            f"risk={self.risk_score.level.value}({self.risk_score.score:.2f})"
         )

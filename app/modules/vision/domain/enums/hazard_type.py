@@ -1,0 +1,74 @@
+"""
+domain/enums/hazard_type.py — Canonical vocabulary of detectable safety hazards.
+
+Every detector implementation must map its raw class labels to one of
+these values via the infrastructure mapper.  The domain never sees raw
+class strings or model-specific IDs.
+
+Design note — future Risk Policy Engine
+────────────────────────────────────────
+The mapping of HazardType → RiskLevel intentionally does NOT live here.
+It will live in:
+
+    domain/policies/risk_policy.py
+
+Benefits:
+• Business rules are centralised.
+• Safety policy changes (e.g. NO_HELMET escalated to HIGH) happen in
+  one place without touching this enum or any use-case.
+"""
+
+from enum import Enum
+
+
+class HazardType(str, Enum):
+    """Types of hazards that can be detected by the Vision module."""
+
+    # ── Presence detections (compliant / informational) ───────────────────────
+    PERSON         = "PERSON"
+    HELMET         = "HELMET"
+    SAFETY_VEST    = "SAFETY_VEST"
+
+    # ── PPE non-compliance ────────────────────────────────────────────────────
+    NO_HELMET      = "NO_HELMET"
+    NO_SAFETY_VEST = "NO_SAFETY_VEST"
+    NO_VEST        = "NO_SAFETY_VEST"
+    VEST           = "SAFETY_VEST"
+
+    # ── Environmental hazards ─────────────────────────────────────────────────
+    FIRE           = "FIRE"
+    SMOKE          = "SMOKE"
+
+    # ── Spills and contamination ──────────────────────────────────────────────
+    CHEMICAL_SPILL = "CHEMICAL_SPILL"
+
+    # ── Incidents ─────────────────────────────────────────────────────────────
+    FALL           = "FALL"
+
+    # ── Equipment ─────────────────────────────────────────────────────────────
+    MACHINERY      = "MACHINERY"
+
+    # ── Fallback ──────────────────────────────────────────────────────────────
+    UNKNOWN        = "UNKNOWN"
+
+    # ── Domain helpers ────────────────────────────────────────────────────────
+
+    @property
+    def is_compliance_violation(self) -> bool:
+        """True if this hazard represents a PPE non-compliance event."""
+        return self in {HazardType.NO_HELMET, HazardType.NO_SAFETY_VEST}
+
+    @property
+    def is_environmental(self) -> bool:
+        """True if this hazard is an environmental / physical danger."""
+        return self in {HazardType.FIRE, HazardType.SMOKE, HazardType.CHEMICAL_SPILL}
+
+    @property
+    def is_incident(self) -> bool:
+        """True if this hazard represents an active incident."""
+        return self in {HazardType.FALL}
+
+    @property
+    def is_compliant_presence(self) -> bool:
+        """True for detections that confirm PPE compliance."""
+        return self in {HazardType.HELMET, HazardType.SAFETY_VEST}

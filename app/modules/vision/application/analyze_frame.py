@@ -49,9 +49,7 @@ from app.modules.vision.application.save_detection import (
     save_vision_event,
 )
 from app.modules.vision.domain.entities import Detection, VisionEvent
-from app.modules.vision.domain.enums import RiskLevel
 from app.modules.vision.domain.repository import VisionRepository
-from app.modules.vision.domain.value_objects import RiskScore
 from app.modules.vision.schemas.request import AnalyzeFrameRequest
 
 log = get_logger("vision.analyze_frame")

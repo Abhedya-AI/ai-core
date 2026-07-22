@@ -40,26 +40,31 @@ log = get_logger("vision.mapper")
 
 _CLASS_TO_HAZARD: dict[str, HazardType] = {
     # YOLO safety dataset (common labels)
-    "person":           HazardType.PERSON,
-    "helmet":           HazardType.HELMET,
-    "no-helmet":        HazardType.NO_HELMET,
-    "no_helmet":        HazardType.NO_HELMET,
-    "hardhat":          HazardType.HELMET,
-    "no-hardhat":       HazardType.NO_HELMET,
-    "vest":             HazardType.VEST,
-    "safety-vest":      HazardType.VEST,
-    "no-vest":          HazardType.NO_VEST,
-    "no_vest":          HazardType.NO_VEST,
-    "fire":             HazardType.FIRE,
-    "smoke":            HazardType.SMOKE,
-    "chemical-spill":   HazardType.CHEMICAL_SPILL,
-    "chemical_spill":   HazardType.CHEMICAL_SPILL,
-    "fall":             HazardType.FALL,
-    "falling":          HazardType.FALL,
-    "machinery":        HazardType.MACHINERY,
-    "machine":          HazardType.MACHINERY,
-    "forklift":         HazardType.MACHINERY,
-    "crane":            HazardType.MACHINERY,
+    "person":              HazardType.PERSON,
+    "helmet":              HazardType.HELMET,
+    "hardhat":             HazardType.HELMET,
+    "no-helmet":           HazardType.NO_HELMET,
+    "no_helmet":           HazardType.NO_HELMET,
+    "no-hardhat":          HazardType.NO_HELMET,
+    "vest":                HazardType.SAFETY_VEST,
+    "safety-vest":         HazardType.SAFETY_VEST,
+    "safety_vest":         HazardType.SAFETY_VEST,
+    "no-vest":             HazardType.NO_SAFETY_VEST,
+    "no_vest":             HazardType.NO_SAFETY_VEST,
+    "no-safety-vest":      HazardType.NO_SAFETY_VEST,
+    "no_safety_vest":      HazardType.NO_SAFETY_VEST,
+    "fire":                HazardType.FIRE,
+    "smoke":               HazardType.SMOKE,
+    "chemical-spill":      HazardType.CHEMICAL_SPILL,
+    "chemical_spill":      HazardType.CHEMICAL_SPILL,
+    "fall":                HazardType.FALL,
+    "falling":             HazardType.FALL,
+    "machinery":           HazardType.MACHINERY,
+    "machine":             HazardType.MACHINERY,
+    "forklift":            HazardType.MACHINERY,
+    "crane":               HazardType.MACHINERY,
+    # Unknown / unclassified
+    "unknown":             HazardType.UNKNOWN,
 }
 
 
@@ -90,17 +95,17 @@ def map_raw_detection(
 
     if hazard_type is None:
         log.warning(
-            f"Unknown class label '{class_name}' — detection skipped. "
-            f"Add it to infrastructure/mapper.py to handle it."
+            f"Unknown class label '{class_name}' — mapped to UNKNOWN. "
+            f"Add it to infrastructure/mapper.py for a precise category."
         )
-        return None
+        hazard_type = HazardType.UNKNOWN
 
     try:
         bounding_box = BoundingBox.from_xyxy_pixels(
-            x1=int(raw["x1"]),
-            y1=int(raw["y1"]),
-            x2=int(raw["x2"]),
-            y2=int(raw["y2"]),
+            x_min=int(raw["x1"]),
+            y_min=int(raw["y1"]),
+            x_max=int(raw["x2"]),
+            y_max=int(raw["y2"]),
             image_width=int(raw["image_width"]),
             image_height=int(raw["image_height"]),
         )

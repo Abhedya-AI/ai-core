@@ -7,11 +7,16 @@ and a list of domain Hazards.
 Design
 ──────
 • Pure business logic — no I/O, no model calls, no HTTP.
-• The scoring weights are centralised here.  In a later milestone they
-  can be loaded from a config file or database without touching the
-  domain or API layers.
-• The engine is intentionally simple for Milestone 1.  Replace the body
-  of `calculate` with any ML-based scoring model later.
+• Hazard weights and level thresholds are centralised here.
+
+Future: Risk Policy Engine
+──────────────────────────
+In a later milestone these tables will move to:
+
+    domain/policies/risk_policy.py
+
+so the safety team can adjust thresholds without touching use-case code.
+For now, keeping them here is the simplest correct design.
 
 Scoring algorithm (v1 — additive, capped at 1.0)
 ──────────────────────────────────────────────────
@@ -47,15 +52,20 @@ _HAZARD_WEIGHTS: dict[HazardType, float] = {
 
     # PPE non-compliance — significant but not immediately fatal
     HazardType.NO_HELMET:      0.55,
-    HazardType.NO_VEST:        0.45,
+    HazardType.NO_SAFETY_VEST: 0.45,
 
     # Machinery presence — contextual, not inherently dangerous
     HazardType.MACHINERY:      0.30,
 
     # Presence-only detections — informational
     HazardType.PERSON:         0.10,
-    HazardType.HELMET:         0.00,   # compliance — no risk contribution
-    HazardType.VEST:           0.00,   # compliance — no risk contribution
+
+    # Compliant detections — no risk contribution
+    HazardType.HELMET:         0.00,
+    HazardType.SAFETY_VEST:    0.00,
+
+    # Unknown — treated as low risk until identified
+    HazardType.UNKNOWN:        0.05,
 }
 
 # ── RiskLevel thresholds ──────────────────────────────────────────────────────
@@ -84,11 +94,12 @@ _HAZARD_DESCRIPTIONS: dict[HazardType, str] = {
     HazardType.FALL:           "Worker fall incident detected.",
     HazardType.SMOKE:          "Smoke or fume accumulation detected.",
     HazardType.NO_HELMET:      "Worker without helmet detected — PPE non-compliance.",
-    HazardType.NO_VEST:        "Worker without high-visibility vest — PPE non-compliance.",
+    HazardType.NO_SAFETY_VEST: "Worker without high-visibility vest — PPE non-compliance.",
     HazardType.MACHINERY:      "Heavy machinery in proximity to personnel.",
     HazardType.PERSON:         "Person detected in zone.",
     HazardType.HELMET:         "Worker with helmet detected — compliant.",
-    HazardType.VEST:           "Worker with vest detected — compliant.",
+    HazardType.SAFETY_VEST:    "Worker with safety vest detected — compliant.",
+    HazardType.UNKNOWN:        "Unidentified object detected.",
 }
 
 
@@ -117,12 +128,11 @@ class RiskEngine:
         Returns
         ───────
         (RiskScore, list[Hazard])
-            The aggregated risk score and the derived hazard list.
         """
         if not detections:
             log.debug("No detections — returning zero risk score.")
             return (
-                RiskScore(value=0.0, level=RiskLevel.LOW, contributing_hazards=()),
+                RiskScore(score=0.0, level=RiskLevel.LOW, reason="No hazards detected."),
                 [],
             )
 
@@ -134,8 +144,10 @@ class RiskEngine:
             weighted    = base_weight * det.confidence
             contributions.append((det.hazard_type, weighted))
 
-            # Determine per-hazard risk level from its own weighted score
             hazard_level = _score_to_level(weighted)
+            description  = _HAZARD_DESCRIPTIONS.get(
+                det.hazard_type, "Unknown hazard detected."
+            )
 
             hazards.append(
                 Hazard(
@@ -144,9 +156,7 @@ class RiskEngine:
                     risk_level=hazard_level,
                     bounding_box=det.bounding_box,
                     source_detection_ids=[det.id],
-                    description=_HAZARD_DESCRIPTIONS.get(
-                        det.hazard_type, "Unknown hazard detected."
-                    ),
+                    description=description,
                 )
             )
 
@@ -157,14 +167,25 @@ class RiskEngine:
         # Sort contributions descending for explainability
         contributions.sort(key=lambda x: x[1], reverse=True)
 
+        # Build a human-readable reason string from top contributors
+        top = contributions[:3]
+        reason_parts = [
+            f"{h.value}({w:.2f})" for h, w in top if w > 0
+        ]
+        reason = (
+            f"Top contributors: {', '.join(reason_parts)}"
+            if reason_parts
+            else "No significant risk contributors."
+        )
+
         risk_score = RiskScore(
-            value=round(raw_score, 4),
+            score=round(raw_score, 4),
             level=level,
-            contributing_hazards=tuple(contributions),
+            reason=reason,
         )
 
         log.debug(
-            f"Risk calculated: score={risk_score.value:.3f} "
+            f"Risk calculated: score={risk_score.score:.3f} "
             f"level={risk_score.level.value} "
             f"hazards={len(hazards)}"
         )
