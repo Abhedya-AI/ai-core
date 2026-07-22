@@ -129,9 +129,9 @@ main           ← production releases
 | # | Milestone | Status |
 |---|---|---|
 | 1 | Foundation (Config, Logging, DB, Health API, Docker) | ✅ In Progress |
-| 2 | Knowledge Graph (Neo4j nodes, relationships, Cypher API) | ⏳ |
-| 3 | GraphRAG++ (Ingestion, Embeddings, Hybrid Retrieval, Reranker, LLM, Citation) | ⏳ |
-| 4 | Multi-Agent Orchestration (LangGraph) | ⏳ |
-| 5 | Root Cause Analysis Engine | ⏳ |
-| 6 | Emergency Response Planner | ⏳ |
-| 7 | Geospatial Risk Intelligence | ⏳ |
+| 2 | Knowledge Graph (Neo4j nodes, relationships, Cypher API) |  ✅ In Progress  |
+| 3 | GraphRAG++ (Ingestion, Embeddings, Hybrid Retrieval, Reranker, LLM, Citation) |  ✅ In Progress  |
+| 4 | Multi-Agent Orchestration (LangGraph) |  ✅ In Progress  |
+| 5 | Root Cause Analysis Engine |  ✅ In Progress  |
+| 6 | Emergency Response Planner |  ✅ In Progress  |
+| 7 | Geospatial Risk Intelligence |  ✅ In Progress  |
