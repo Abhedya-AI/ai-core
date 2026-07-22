@@ -3,7 +3,7 @@ tests/test_analyze_frame.py — Integration-style tests for AnalyzeFrameUseCase.
 
 These tests exercise the full pipeline with:
   • An in-memory stub repository (no DB required)
-  • The StubDetector (no model required)
+  • Fake detectors (no model required)
   • A real RiskEngine
 
 All async because the use-case is async.
@@ -15,7 +15,7 @@ import pytest_asyncio
 from app.modules.vision.application.analyze_frame import AnalyzeFrameUseCase, FrameDetector
 from app.modules.vision.application.calculate_risk import RiskEngine
 from app.modules.vision.domain.entities import Detection, VisionEvent
-from app.modules.vision.domain.enums import HazardType, RiskLevel
+from app.modules.vision.domain.enums import DetectionStatus, HazardType, RiskLevel
 from app.modules.vision.domain.repository import VisionRepository
 from app.modules.vision.domain.value_objects import BoundingBox, RiskScore
 from app.modules.vision.infrastructure.detector import StubDetector
@@ -56,7 +56,7 @@ class FireDetector(FrameDetector):
             Detection(
                 hazard_type=HazardType.FIRE,
                 confidence=0.95,
-                bounding_box=BoundingBox(x1=0.1, y1=0.1, x2=0.5, y2=0.5),
+                bounding_box=BoundingBox(x_min=0.1, y_min=0.1, x_max=0.5, y_max=0.5),
                 frame_id=frame_id,
                 camera_id=camera_id,
             )
@@ -82,7 +82,7 @@ class TestAnalyzeFrameUseCase:
         assert event.detection_count == 0
         assert event.hazard_count == 0
         assert event.risk_score.level == RiskLevel.LOW
-        assert event.risk_score.value == 0.0
+        assert event.risk_score.score == 0.0
 
     @pytest.mark.asyncio
     async def test_fire_detector_triggers_critical(self):
@@ -97,6 +97,24 @@ class TestAnalyzeFrameUseCase:
         assert event.risk_score.level == RiskLevel.CRITICAL
         assert event.is_critical is True
         assert event.hazards[0].hazard_type == HazardType.FIRE
+
+    @pytest.mark.asyncio
+    async def test_risk_score_has_reason(self):
+        use_case = AnalyzeFrameUseCase(
+            detector=FireDetector(),
+            repository=InMemoryVisionRepository(),
+        )
+        event = await use_case.execute(b"fake-image", _make_request())
+        assert event.risk_score.reason != ""
+
+    @pytest.mark.asyncio
+    async def test_detection_default_status_pending(self):
+        use_case = AnalyzeFrameUseCase(
+            detector=FireDetector(),
+            repository=InMemoryVisionRepository(),
+        )
+        event = await use_case.execute(b"fake-image", _make_request())
+        assert event.detections[0].status == DetectionStatus.PENDING
 
     @pytest.mark.asyncio
     async def test_event_persisted_in_repo(self):
@@ -142,3 +160,16 @@ class TestAnalyzeFrameUseCase:
         )
         event = await use_case.execute(b"fake-image", _make_request())
         assert event.actionable_hazards == []
+
+    @pytest.mark.asyncio
+    async def test_bounding_box_field_names(self):
+        """BoundingBox in detections must expose x_min/y_min/x_max/y_max."""
+        use_case = AnalyzeFrameUseCase(
+            detector=FireDetector(),
+            repository=InMemoryVisionRepository(),
+        )
+        event = await use_case.execute(b"fake-image", _make_request())
+        bb = event.detections[0].bounding_box
+        assert hasattr(bb, "x_min")
+        assert hasattr(bb, "x_max")
+        assert not hasattr(bb, "x1")

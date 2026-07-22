@@ -15,7 +15,6 @@ from __future__ import annotations
 from app.modules.vision.domain.entities import Detection, Hazard, VisionEvent
 from app.modules.vision.schemas.response import (
     BoundingBoxSchema,
-    ContributingHazardSchema,
     DetectionSchema,
     HazardSchema,
     RiskScoreSchema,
@@ -24,13 +23,19 @@ from app.modules.vision.schemas.response import (
 
 
 def serialize_bounding_box(bb) -> BoundingBoxSchema:
-    return BoundingBoxSchema(x1=bb.x1, y1=bb.y1, x2=bb.x2, y2=bb.y2)
+    return BoundingBoxSchema(
+        x_min=bb.x_min,
+        y_min=bb.y_min,
+        x_max=bb.x_max,
+        y_max=bb.y_max,
+    )
 
 
 def serialize_detection(det: Detection) -> DetectionSchema:
     return DetectionSchema(
         id=det.id,
         hazard_type=det.hazard_type.value,
+        status=det.status.value,
         confidence=det.confidence,
         bounding_box=serialize_bounding_box(det.bounding_box),
         frame_id=det.frame_id,
@@ -56,13 +61,10 @@ def serialize_hazard(hazard: Hazard) -> HazardSchema:
 
 def serialize_risk_score(rs) -> RiskScoreSchema:
     return RiskScoreSchema(
-        value=rs.value,
+        score=rs.score,
         level=rs.level.value,
-        is_actionable=rs.is_actionable,
-        contributing_hazards=[
-            ContributingHazardSchema(hazard=h.value, weight=w)
-            for h, w in rs.contributing_hazards
-        ],
+        is_critical=rs.is_critical,
+        reason=rs.reason,
     )
 
 

@@ -25,10 +25,10 @@ from pydantic import BaseModel, Field
 class BoundingBoxSchema(BaseModel):
     """Normalised bounding box in image space ([0, 1])."""
 
-    x1: float = Field(..., description="Left edge (normalised).")
-    y1: float = Field(..., description="Top edge (normalised).")
-    x2: float = Field(..., description="Right edge (normalised).")
-    y2: float = Field(..., description="Bottom edge (normalised).")
+    x_min: float = Field(..., description="Left edge (normalised).")
+    y_min: float = Field(..., description="Top edge (normalised).")
+    x_max: float = Field(..., description="Right edge (normalised).")
+    y_max: float = Field(..., description="Bottom edge (normalised).")
 
 
 # ── Detection ─────────────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ class DetectionSchema(BaseModel):
 
     id:           str               = Field(..., description="Unique detection UUID.")
     hazard_type:  str               = Field(..., description="Canonical HazardType value.")
+    status:       str               = Field(..., description="Lifecycle status (PENDING/VERIFIED/REJECTED/ARCHIVED).")
     confidence:   float             = Field(..., description="Model confidence ∈ [0, 1].")
     bounding_box: BoundingBoxSchema = Field(..., description="Object location in the frame.")
     frame_id:     str               = Field(..., description="Source frame identifier.")
@@ -64,23 +65,13 @@ class HazardSchema(BaseModel):
 
 # ── RiskScore ─────────────────────────────────────────────────────────────────
 
-class ContributingHazardSchema(BaseModel):
-    """A single (hazard_type, weight) pair that drove the risk score."""
-
-    hazard:  str   = Field(..., description="HazardType value.")
-    weight:  float = Field(..., description="Contribution weight ∈ [0, 1].")
-
-
 class RiskScoreSchema(BaseModel):
     """Aggregated risk assessment for the analysed frame."""
 
-    value:                float                        = Field(..., description="Continuous risk score ∈ [0, 1].")
-    level:                str                          = Field(..., description="Discrete RiskLevel.")
-    is_actionable:        bool                         = Field(..., description="True when level ≥ HIGH.")
-    contributing_hazards: list[ContributingHazardSchema] = Field(
-        default_factory=list,
-        description="Ranked list of hazards that drove the score.",
-    )
+    score:       float = Field(..., description="Continuous risk score ∈ [0, 1].")
+    level:       str   = Field(..., description="Discrete RiskLevel.")
+    is_critical: bool  = Field(..., description="True when level = CRITICAL.")
+    reason:      str   = Field(default="", description="Human-readable explanation of the risk score.")
 
 
 # ── VisionEvent ───────────────────────────────────────────────────────────────
