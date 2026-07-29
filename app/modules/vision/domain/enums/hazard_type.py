@@ -32,8 +32,6 @@ class HazardType(str, Enum):
     # ── PPE non-compliance ────────────────────────────────────────────────────
     NO_HELMET      = "NO_HELMET"
     NO_SAFETY_VEST = "NO_SAFETY_VEST"
-    NO_VEST        = "NO_SAFETY_VEST"
-    VEST           = "SAFETY_VEST"
 
     # ── Environmental hazards ─────────────────────────────────────────────────
     FIRE           = "FIRE"

@@ -38,6 +38,20 @@ class BoundingBox(BaseModel):
     x_max: float = Field(..., ge=0.0, le=1.0, description="Right edge (normalised).")
     y_max: float = Field(..., ge=0.0, le=1.0, description="Bottom edge (normalised).")
 
+    @model_validator(mode="before")
+    @classmethod
+    def validate_ranges(cls, values: dict) -> dict:
+        """Check that all coordinates are within [0, 1]."""
+        for field in ("x_min", "y_min", "x_max", "y_max"):
+            v = values.get(field)
+            if v is not None:
+                if v < 0.0 or v > 1.0:
+                    raise ValueError(
+                        f"{field}={v} must be greater than or equal to 0 "
+                        f"and less than or equal to 1"
+                    )
+        return values
+
     @model_validator(mode="after")
     def validate_coordinates(self) -> "BoundingBox":
         if self.x_min >= self.x_max:
