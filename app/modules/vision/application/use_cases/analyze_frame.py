@@ -127,10 +127,11 @@ class AnalyzeFrameUseCase:
             ) from exc
 
         processing_time_ms = (time.monotonic() - t0) * 1000
+        model_ver = getattr(self._detector, "model_version", None) or getattr(self._detector, "model_name", "unknown")
 
         log.info(
             f"AnalyzeFrameUseCase: {len(detections)} detection(s) in "
-            f"{processing_time_ms:.1f}ms  model={self._detector.model_version}"
+            f"{processing_time_ms:.1f}ms  model={model_ver}"
         )
 
         return FrameAnalysisResult(
@@ -138,5 +139,5 @@ class AnalyzeFrameUseCase:
             camera_id=camera_id,
             processing_time_ms=processing_time_ms,
             detections=detections,
-            model_version=self._detector.model_version,
+            model_version=model_ver,
         )

@@ -16,7 +16,7 @@ def test_root_endpoint(client: TestClient):
     body = resp.json()
     assert body["name"] == "ABHEDYA AI Core"
     assert body["status"] == "running"
-    assert body["version"] == "1.0.0"
+    assert body["version"] == "4.0.0"
 
 
 def test_health_endpoint(client: TestClient):
