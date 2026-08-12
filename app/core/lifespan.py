@@ -65,11 +65,14 @@ async def lifespan(app: FastAPI):
     try:
         from app.infrastructure.neo4j.driver import get_driver
         from app.infrastructure.neo4j.health import check_neo4j
+        from app.modules.knowledge.infrastructure.schema_initializer import initialize_schema
         driver = await get_driver()
         status = await check_neo4j()
         if status.is_healthy:
             registry.register_neo4j(driver)
             log.info(f"Neo4j        ✓  latency={status.latency_ms}ms")
+            # Initialize Knowledge Graph constraints & indexes
+            await initialize_schema()
         else:
             log.warning(f"Neo4j        ✗  {status.error}")
     except Exception as exc:

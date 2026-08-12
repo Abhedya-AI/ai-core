@@ -27,13 +27,17 @@ def _serialize_event(event: VisionEvent) -> dict:
     Convert a VisionEvent into the Kafka wire-format dict.
     """
     return {
-        "event_id":     str(event.event_id),
-        "detection_id": str(event.detection_id),
-        "camera_id":    str(event.camera_id),
-        "hazard_type":  event.hazard_type.value,
-        "risk_level":   event.risk_level.value,
-        "confidence":   event.confidence,
-        "occurred_at":  event.occurred_at.isoformat(),
+        "event_id":         event.event_id,
+        "camera_id":        event.camera_id,
+        "frame_id":         event.frame_id,
+        "risk_level":       event.risk_score.level.value,
+        "risk_score":       event.risk_score.score,
+        "risk_reason":      event.risk_score.reason,
+        "detection_count":  event.detection_count,
+        "hazard_count":     event.hazard_count,
+        "is_critical":      event.is_critical,
+        "hazard_types":     [h.hazard_type.value for h in event.hazards],
+        "occurred_at":      event.occurred_at.isoformat(),
     }
 
 

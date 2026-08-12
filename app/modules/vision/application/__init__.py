@@ -1,27 +1,25 @@
 """
-application/__init__.py — Re-exports for the application layer.
+application/__init__.py — Vision Application Layer Exports.
 """
-
-from app.modules.vision.application.analyze_frame import (
-    AnalyzeFrameUseCase,
-    FrameDetector,
+from app.modules.vision.application.feature_engineering import VisionFeatureEngine, VisionFeatureVector
+from app.modules.vision.application.dto.vision_safety_dto import (
+    PPECheckRequest, ZoneAccessCheckRequest, InteractionCheckRequest,
+    FallEvaluationRequest, FireVerificationRequest, VisionAIProcessRequest
 )
-from app.modules.vision.application.calculate_risk import RiskEngine
-from app.modules.vision.application.publish_event import (
-    PublishEventError,
-    publish_vision_event,
-)
-from app.modules.vision.application.save_detection import (
-    SaveDetectionError,
-    save_detection,
+from app.modules.vision.application.use_cases.vision_safety_use_cases import (
+    EvaluatePPEComplianceUseCase, CheckRestrictedZoneAccessUseCase, ProcessVisionFrameAIUseCase
 )
 
 __all__ = [
-    "AnalyzeFrameUseCase",
-    "FrameDetector",
-    "RiskEngine",
-    "publish_vision_event",
-    "PublishEventError",
-    "save_detection",
-    "SaveDetectionError",
+    "VisionFeatureEngine",
+    "VisionFeatureVector",
+    "PPECheckRequest",
+    "ZoneAccessCheckRequest",
+    "InteractionCheckRequest",
+    "FallEvaluationRequest",
+    "FireVerificationRequest",
+    "VisionAIProcessRequest",
+    "EvaluatePPEComplianceUseCase",
+    "CheckRestrictedZoneAccessUseCase",
+    "ProcessVisionFrameAIUseCase",
 ]

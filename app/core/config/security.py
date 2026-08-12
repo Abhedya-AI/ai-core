@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.config._base import _ENV_FILES
 
-_DEFAULT_SECRET = "change-this-in-production"
+_DEFAULT_SECRET = "abhedya-dev-secret-change-this-before-production-deployment-64chars"
 
 
 class SecuritySettings(BaseSettings):

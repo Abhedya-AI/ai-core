@@ -1,0 +1,61 @@
+name: CD — Build & Deploy
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.prod
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  scan:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with: {sarif_file: trivy-results.sarif}
+
+  deploy-staging:
+    needs: scan
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: azure/k8s-deploy@v4
+        with:
+          namespace: abhedya-staging
+          manifests: k8s/deployment.yaml
+          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: azure/k8s-deploy@v4
+        with:
+          namespace: abhedya
+          manifests: k8s/deployment.yaml
+          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          strategy: canary
+          percentage: 10

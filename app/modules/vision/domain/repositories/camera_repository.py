@@ -1,30 +1,46 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from uuid import UUID
-
-from app.modules.vision.domain.entities import Camera
+from app.modules.vision.domain.entities.camera import Camera
+from app.modules.vision.domain.entities.camera_group import CameraGroup
+from app.modules.vision.domain.entities.camera_health import CameraHealth
 
 
 class CameraRepository(ABC):
-    """
-    Repository contract for Camera persistence.
-    """
+    """Repository contract for Camera persistence."""
 
+    # Base CRUD
     @abstractmethod
-    async def save(self, camera: Camera) -> Camera:
-        """Persist a camera."""
-        raise NotImplementedError
+    async def save(self, camera: Camera) -> Camera: ...
+    @abstractmethod
+    async def get_by_id(self, camera_id: UUID | str) -> Camera | None: ...
+    @abstractmethod
+    async def list_all(self) -> list[Camera]: ...
+    @abstractmethod
+    async def update(self, camera: Camera) -> Camera: ...
 
+    # Extended CRUD & Queries
     @abstractmethod
-    async def get_by_id(self, camera_id: UUID) -> Camera | None:
-        """Retrieve a camera by its unique identifier."""
-        raise NotImplementedError
-
+    async def save_camera(self, camera: Camera) -> Camera: ...
     @abstractmethod
-    async def list_all(self) -> list[Camera]:
-        """List all cameras registered in the system."""
-        raise NotImplementedError
-
+    async def get_camera(self, camera_id: str) -> Camera | None: ...
     @abstractmethod
-    async def update(self, camera: Camera) -> Camera:
-        """Update an existing camera's details."""
-        raise NotImplementedError
+    async def update_camera(self, camera: Camera) -> Camera: ...
+    @abstractmethod
+    async def delete_camera(self, camera_id: str) -> None: ...
+    @abstractmethod
+    async def list_cameras(self, zone_id: str | None = None, group_id: str | None = None, status: str | None = None, active_only: bool = False, limit: int = 50, offset: int = 0) -> list[Camera]: ...
+    @abstractmethod
+    async def list_by_zone(self, zone_id: str) -> list[Camera]: ...
+    @abstractmethod
+    async def list_active(self) -> list[Camera]: ...
+    @abstractmethod
+    async def save_group(self, group: CameraGroup) -> CameraGroup: ...
+    @abstractmethod
+    async def get_group(self, group_id: str) -> CameraGroup | None: ...
+    @abstractmethod
+    async def list_groups(self) -> list[CameraGroup]: ...
+    @abstractmethod
+    async def save_health(self, health: CameraHealth) -> CameraHealth: ...
+    @abstractmethod
+    async def get_health(self, camera_id: str) -> CameraHealth | None: ...

@@ -1,0 +1,39 @@
+name: Security Scan
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install bandit semgrep
+      - run: bandit -r app/ -f json -o bandit-report.json || true
+      - run: semgrep --config=auto app/ --json > semgrep-report.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: '*-report.json'
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pip-audit safety
+      - run: pip-audit -r pyproject.toml --format json > audit.json || true
+      - run: safety check --full-report || true

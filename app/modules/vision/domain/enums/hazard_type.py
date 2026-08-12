@@ -22,18 +22,21 @@ from enum import Enum
 
 
 class HazardType(str, Enum):
-    """Types of hazards that can be detected by the Vision module."""
-
     # ── Presence detections (compliant / informational) ───────────────────────
     PERSON         = "PERSON"
     HELMET         = "HELMET"
     SAFETY_VEST    = "SAFETY_VEST"
+    MASK           = "MASK"
+    GLOVES         = "GLOVES"
+    GOGGLES        = "GOGGLES"
+    WORKER         = "WORKER"
 
     # ── PPE non-compliance ────────────────────────────────────────────────────
     NO_HELMET      = "NO_HELMET"
     NO_SAFETY_VEST = "NO_SAFETY_VEST"
-    NO_VEST        = "NO_SAFETY_VEST"
-    VEST           = "SAFETY_VEST"
+    NO_MASK        = "NO_MASK"
+    NO_GLOVES      = "NO_GLOVES"
+    NO_GOGGLES     = "NO_GOGGLES"
 
     # ── Environmental hazards ─────────────────────────────────────────────────
     FIRE           = "FIRE"
@@ -45,7 +48,15 @@ class HazardType(str, Enum):
     # ── Incidents ─────────────────────────────────────────────────────────────
     FALL           = "FALL"
 
-    # ── Equipment ─────────────────────────────────────────────────────────────
+    # ── Heavy equipment ───────────────────────────────────────────────────────
+    FORKLIFT       = "FORKLIFT"
+    CRANE          = "CRANE"
+    TRUCK          = "TRUCK"
+
+    # ── Behavioral ────────────────────────────────────────────────────────────
+    RESTRICTED_ZONE_ENTRY = "RESTRICTED_ZONE_ENTRY"
+
+    # ── Equipment (legacy) ────────────────────────────────────────────────────
     MACHINERY      = "MACHINERY"
 
     # ── Fallback ──────────────────────────────────────────────────────────────
@@ -56,7 +67,10 @@ class HazardType(str, Enum):
     @property
     def is_compliance_violation(self) -> bool:
         """True if this hazard represents a PPE non-compliance event."""
-        return self in {HazardType.NO_HELMET, HazardType.NO_SAFETY_VEST}
+        return self in {
+            HazardType.NO_HELMET, HazardType.NO_SAFETY_VEST,
+            HazardType.NO_MASK, HazardType.NO_GLOVES, HazardType.NO_GOGGLES,
+        }
 
     @property
     def is_environmental(self) -> bool:
@@ -71,4 +85,12 @@ class HazardType(str, Enum):
     @property
     def is_compliant_presence(self) -> bool:
         """True for detections that confirm PPE compliance."""
-        return self in {HazardType.HELMET, HazardType.SAFETY_VEST}
+        return self in {
+            HazardType.HELMET, HazardType.SAFETY_VEST,
+            HazardType.MASK, HazardType.GLOVES, HazardType.GOGGLES,
+        }
+
+    @property
+    def is_equipment(self) -> bool:
+        """True for heavy equipment detections."""
+        return self in {HazardType.FORKLIFT, HazardType.CRANE, HazardType.TRUCK, HazardType.MACHINERY}

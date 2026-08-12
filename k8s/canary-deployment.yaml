@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abhedya-canary
+  namespace: abhedya
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: abhedya-canary
+  template:
+    metadata:
+      labels:
+        app: abhedya-canary
+    spec:
+      containers:
+        - name: abhedya-canary
+          image: abhedya-ai-core:canary
+          ports:
+            - containerPort: 8000
+# Instructions: Use Istio or Nginx ingress annotations to route 10% traffic to `abhedya-canary` service selector

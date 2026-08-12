@@ -18,7 +18,7 @@ class AgentRegistry:
         self._agents: dict[str, BaseAgent] = {}
 
     @classmethod
-    def get(cls) -> "AgentRegistry":
+    def get_instance(cls) -> "AgentRegistry":
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance

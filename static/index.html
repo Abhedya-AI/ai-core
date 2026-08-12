@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABHEDYA — AI Safety Control Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070a12;
+      --bg-panel: rgba(15, 23, 42, 0.75);
+      --bg-card: rgba(30, 41, 59, 0.5);
+      --border-glow: rgba(0, 242, 254, 0.2);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      
+      --cyan: #00f2fe;
+      --blue: #4facfe;
+      --amber: #ffb300;
+      --rose: #ff2a6d;
+      --emerald: #00e676;
+      --purple: #9d4edd;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(157, 78, 221, 0.05) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ───────────────────────────────────────────────────────────── */
+    header {
+      height: 64px;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      color: #000;
+      font-size: 20px;
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.4);
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: linear-gradient(to right, #fff, var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      color: var(--cyan);
+      letter-spacing: 1px;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* ── Main Layout ──────────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 340px 1fr 380px;
+      gap: 16px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .panel-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── KPI Grid ─────────────────────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 3px; height: 100%;
+      background: var(--cyan);
+    }
+
+    .kpi-card.danger::before { background: var(--rose); }
+    .kpi-card.warning::before { background: var(--amber); }
+
+    .kpi-val {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── Zone Status Cards ────────────────────────────────────────────────── */
+    .zone-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .zone-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-1px);
+    }
+
+    .zone-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .zone-info p {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .zone-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .badge-normal { background: rgba(0, 230, 118, 0.15); color: var(--emerald); }
+    .badge-warning { background: rgba(255, 179, 0, 0.15); color: var(--amber); }
+    .badge-critical { background: rgba(255, 42, 109, 0.15); color: var(--rose); }
+
+    /* ── Center Stage: Agent & Graph Viewer ─────────────────────────────── */
+    .center-stage {
+      display: grid;
+      grid-template-rows: 1fr 280px;
+      gap: 16px;
+    }
+
+    .graph-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: rgba(7, 10, 18, 0.6);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── Agent Pipeline Live Monitor ─────────────────────────────────────── */
+    .agent-pipeline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+
+    .agent-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .agent-node.active {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+    }
+
+    .agent-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .agent-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .agent-status {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* ── Incident Event Log ──────────────────────────────────────────────── */
+    .log-item {
+      background: var(--bg-card);
+      border-left: 3px solid var(--cyan);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .log-item.HIGH, .log-item.CRITICAL { border-left-color: var(--rose); }
+    .log-item.MEDIUM { border-left-color: var(--amber); }
+
+    .log-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .log-msg {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* ── Action Bar / Controls ───────────────────────────────────────────── */
+    .btn {
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: #000;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff2a6d, #ff5e62);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 0 16px rgba(255, 42, 109, 0.5);
+    }
+
+    /* ── Modal Form ───────────────────────────────────────────────────────── */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      width: 480px;
+      padding: 24px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    input, textarea, select {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 13px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">A</div>
+      <div class="brand-title">ABHEDYA AI</div>
+      <div class="brand-tag">Production Platform v4.0</div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-dot"></div>
+        <span>Live Telemetry Active</span>
+      </div>
+      <div class="status-item" id="time-display">--:--:-- UTC</div>
+      <button class="btn" onclick="openIncidentModal()">+ New Incident</button>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Dashboard -->
+  <main>
+    <!-- Left Column: Plant Overview & Zone Map -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">🛡️ Plant Risk Overview</div>
+      </div>
+      <div class="panel-body">
+        <div class="kpi-grid">
+          <div class="kpi-card danger">
+            <div class="kpi-val" id="kpi-risk-score">0.14</div>
+            <div class="kpi-label">Risk Index (0-1)</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-val" id="kpi-active-hazards">3</div>
+            <div class="kpi-label">Active Hazards</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpi-open-incidents">2</div>
+            <div class="kpi-label">Open Incidents</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpi-active-agents">8/8</div>
+            <div class="kpi-label">AI Agents Online</div>
+          </div>
+        </div>
+
+        <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-top:8px;">OPERATIONAL ZONES</div>
+
+        <div class="zone-card">
+          <div class="zone-info">
+            <h4>Zone A — Processing Unit</h4>
+            <p>12 Workers • Temp: 42°C</p>
+          </div>
+          <div class="zone-badge badge-normal">NORMAL</div>
+        </div>
+
+        <div class="zone-card">
+          <div class="zone-info">
+            <h4>Zone B — Tank Farm T-07</h4>
+            <p>4 Workers • Gas: Methane 12ppm</p>
+          </div>
+          <div class="zone-badge badge-warning">ELEVATED</div>
+        </div>
+
+        <div class="zone-card">
+          <div class="zone-info">
+            <h4>Zone C — Offloading Bay</h4>
+            <p>8 Workers • PPE Compliance 96%</p>
+          </div>
+          <div class="zone-badge badge-normal">NORMAL</div>
+        </div>
+
+        <div class="zone-card">
+          <div class="zone-info">
+            <h4>Zone D — Control Building</h4>
+            <p>15 Personnel • Systems Nominal</p>
+          </div>
+          <div class="zone-badge badge-normal">NORMAL</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Column: Interactive Knowledge Graph & Supervisor Feed -->
+    <div class="center-stage">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🌐 Knowledge Graph Visualizer (Neo4j Topology)</div>
+          <div style="font-size:11px; color:var(--cyan);">Interactive 2D Topology</div>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          <div class="graph-canvas-container">
+            <canvas id="graphCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Pipeline -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🧠 Supervisor Agent Multi-Agent Pipeline</div>
+        </div>
+        <div class="panel-body" style="justify-content: center;">
+          <div class="agent-pipeline">
+            <div class="agent-node active">
+              <div class="agent-icon">👁️</div>
+              <div class="agent-name">Vision</div>
+              <div class="agent-status">Active</div>
+            </div>
+            <div class="agent-node active">
+              <div class="agent-icon">⚠️</div>
+              <div class="agent-name">Risk</div>
+              <div class="agent-status">Active</div>
+            </div>
+            <div class="agent-node active">
+              <div class="agent-icon">🔮</div>
+              <div class="agent-name">Predict</div>
+              <div class="agent-status">Active</div>
+            </div>
+            <div class="agent-node active">
+              <div class="agent-icon">📜</div>
+              <div class="agent-name">Compliance</div>
+              <div class="agent-status">Active</div>
+            </div>
+            <div class="agent-node active">
+              <div class="agent-icon">🔍</div>
+              <div class="agent-name">Root Cause</div>
+              <div class="agent-status">Active</div>
+            </div>
+            <div class="agent-node active">
+              <div class="agent-icon">🚨</div>
+              <div class="agent-name">Emergency</div>
+              <div class="agent-status">Active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Real-time Incident & Telemetry Stream -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📡 Real-Time Event Stream (WS / SSE)</div>
+      </div>
+      <div class="panel-body" id="event-stream-container">
+        <div class="log-item HIGH">
+          <div class="log-meta">
+            <span>EVENT_INCIDENT_CREATED</span>
+            <span>17:42:01</span>
+          </div>
+          <div class="log-msg">Gas leak anomaly detected in Zone B (Tank T-07)</div>
+        </div>
+
+        <div class="log-item MEDIUM">
+          <div class="log-meta">
+            <span>RISK_ASSESSMENT_COMPLETED</span>
+            <span>17:41:55</span>
+          </div>
+          <div class="log-msg">Risk Agent scored hazard H-104 at 0.72 (HIGH)</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create Incident Modal -->
+  <div class="modal" id="incidentModal">
+    <div class="modal-content">
+      <h3 style="font-family:var(--font-heading); margin-bottom:16px;">Create Safety Incident</h3>
+      <div class="form-group">
+        <label>Incident Title</label>
+        <input type="text" id="inc-title" placeholder="e.g. Methane leak in Tank Farm">
+      </div>
+      <div class="form-group">
+        <label>Description / AI Query</label>
+        <textarea id="inc-desc" rows="3" placeholder="Describe what occurred or ask the AI agents..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Affected Zone</label>
+        <select id="inc-zone">
+          <option value="ZONE-A">Zone A — Processing Unit</option>
+          <option value="ZONE-B">Zone B — Tank Farm</option>
+          <option value="ZONE-C">Zone C — Offloading Bay</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+        <button class="btn" style="background:transparent; color:#fff; border:1px solid var(--border-subtle);" onclick="closeIncidentModal()">Cancel</button>
+        <button class="btn" onclick="submitIncident()">Submit & Investigate</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Clock ─────────────────────────────────────────────────────────────
+    setInterval(() => {
+      document.getElementById('time-display').innerText = new Date().toISOString().substring(11, 19) + ' UTC';
+    }, 1000);
+
+    // ── Graph Canvas Animation ───────────────────────────────────────────
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const nodes = [
+      { id: 'Plant', label: 'Plant PL-01', x: 0.5, y: 0.5, color: '#00f2fe', r: 16 },
+      { id: 'ZoneA', label: 'Zone A', x: 0.3, y: 0.3, color: '#4facfe', r: 12 },
+      { id: 'ZoneB', label: 'Zone B', x: 0.7, y: 0.3, color: '#ff2a6d', r: 14 },
+      { id: 'ZoneC', label: 'Zone C', x: 0.3, y: 0.7, color: '#00e676', r: 10 },
+      { id: 'Tank07', label: 'Tank T-07', x: 0.8, y: 0.6, color: '#ffb300', r: 10 },
+      { id: 'SOP12', label: 'SOP-GH-04', x: 0.6, y: 0.8, color: '#9d4edd', r: 10 },
+    ];
+
+    const edges = [
+      [0, 1], [0, 2], [0, 3], [2, 4], [4, 5]
+    ];
+
+    function drawGraph() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Draw Edges
+      edges.forEach(([i, j]) => {
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x * w, nodes[i].y * h);
+        ctx.lineTo(nodes[j].x * w, nodes[j].y * h);
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // Draw Nodes
+      nodes.forEach(n => {
+        const nx = n.x * w;
+        const ny = n.y * h;
+
+        ctx.beginPath();
+        ctx.arc(nx, ny, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = n.color;
+        ctx.shadowColor = n.color;
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '11px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.label, nx, ny + n.r + 14);
+      });
+
+      requestAnimationFrame(drawGraph);
+    }
+    drawGraph();
+
+    // ── WebSocket Live Event Stream Connection ───────────────────────────
+    const logContainer = document.getElementById('event-stream-container');
+
+    function addLogEvent(type, message, severity = 'INFO') {
+      const item = document.createElement('div');
+      item.className = `log-item ${severity}`;
+      item.innerHTML = `
+        <div class="log-meta">
+          <span>${type}</span>
+          <span>${new Date().toISOString().substring(11, 19)}</span>
+        </div>
+        <div class="log-msg">${message}</div>
+      `;
+      logContainer.prepend(item);
+      if (logContainer.children.length > 30) {
+        logContainer.removeChild(logContainer.lastChild);
+      }
+    }
+
+    // Try WS or SSE connection
+    try {
+      const wsUrl = `ws://${window.location.host}/api/v1/ws/events?token=demo`;
+      const ws = new WebSocket(wsUrl);
+      ws.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        if (payload.type === 'domain_event') {
+          addLogEvent(
+            payload.data.event_type || 'DOMAIN_EVENT',
+            JSON.stringify(payload.data.payload || payload.data),
+            payload.data.severity || 'INFO'
+          );
+        }
+      };
+    } catch(e) {
+      console.log('WS connecting fallback');
+    }
+
+    // ── Modal Handlers ───────────────────────────────────────────────────
+    function openIncidentModal() {
+      document.getElementById('incidentModal').style.display = 'flex';
+    }
+    function closeIncidentModal() {
+      document.getElementById('incidentModal').style.display = 'none';
+    }
+
+    async function submitIncident() {
+      const title = document.getElementById('inc-title').value;
+      const desc = document.getElementById('inc-desc').value;
+      const zone = document.getElementById('inc-zone').value;
+
+      if (!title || !desc) return;
+
+      closeIncidentModal();
+      addLogEvent('USER_INCIDENT_SUBMITTED', `Submitting: "${title}"`, 'HIGH');
+
+      try {
+        const resp = await fetch('/api/v1/incidents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title,
+            description: desc,
+            zone_id: zone,
+            severity: 'HIGH',
+            auto_investigate: true
+          })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          addLogEvent('AI_SUPERVISOR_INVESTIGATED', `Completed multi-agent analysis for incident`, 'CRITICAL');
+        }
+      } catch(e) {
+        addLogEvent('SUBMIT_ERROR', e.message, 'HIGH');
+      }
+    }
+  </script>
+</body>
+</html>

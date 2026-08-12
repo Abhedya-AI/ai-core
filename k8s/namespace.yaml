@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: abhedya
+  labels:
+    name: abhedya
+    environment: production
+    managed-by: helm

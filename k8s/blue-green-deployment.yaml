@@ -1,0 +1,42 @@
+# Blue Deployment (Stable)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abhedya-blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: abhedya
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: abhedya
+        version: blue
+    spec:
+      containers:
+        - name: abhedya
+          image: abhedya-ai-core:v3.9
+---
+# Green Deployment (New)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abhedya-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: abhedya
+      version: green
+  template:
+    metadata:
+      labels:
+        app: abhedya
+        version: green
+    spec:
+      containers:
+        - name: abhedya
+          image: abhedya-ai-core:v4.0
+# Switch Service instructions: kubectl patch service abhedya-service -p '{"spec":{"selector":{"version":"green"}}}'

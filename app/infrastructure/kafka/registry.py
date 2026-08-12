@@ -21,6 +21,10 @@ class Topics:
     # ── Sensor Domain ──────────────────────────────────────────────────────────
     SENSOR_READING_CREATED = "sensor.reading.created"
     SENSOR_ANOMALY_DETECTED = "sensor.anomaly.detected"
+    SENSOR_HEALTH_CHANGED = "sensor.health.changed"
+    SENSOR_THRESHOLD_VIOLATED = "sensor.threshold.violated"
+    SENSOR_CALIBRATION_REQUIRED = "sensor.calibration.required"
+    SENSOR_FLEET_REPORT = "sensor.fleet.report"
 
     # ── Risk Domain ────────────────────────────────────────────────────────────
     RISK_PREDICTION_COMPLETED = "risk.prediction.completed"

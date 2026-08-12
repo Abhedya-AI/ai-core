@@ -26,7 +26,7 @@ class AgentOrchestrator:
     """
 
     def __init__(self, registry: AgentRegistry | None = None) -> None:
-        self._registry = registry or AgentRegistry.get()
+        self._registry = registry or AgentRegistry.get_instance()
         self._event_bus = EventBus.get()
 
     async def execute_plan(self, plan: ExecutionPlan, context: AgentContext) -> tuple[list[AgentResult], AgentExecutionMemory]:
