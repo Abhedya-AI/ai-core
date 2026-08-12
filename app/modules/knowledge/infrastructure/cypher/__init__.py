@@ -6,3 +6,8 @@ from app.modules.knowledge.infrastructure.cypher.permits import *
 from app.modules.knowledge.infrastructure.cypher.regulations import *
 from app.modules.knowledge.infrastructure.cypher.sensors import *
 from app.modules.knowledge.infrastructure.cypher.workers import *
+from app.modules.knowledge.infrastructure.cypher.algorithms import *
+from app.modules.knowledge.infrastructure.cypher.analytics import *
+from app.modules.knowledge.infrastructure.cypher.search import *
+from app.modules.knowledge.infrastructure.cypher.sync import *
+from app.modules.knowledge.infrastructure.cypher.history import *

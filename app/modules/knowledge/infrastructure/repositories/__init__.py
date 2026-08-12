@@ -7,6 +7,10 @@ from app.modules.knowledge.infrastructure.repositories.permit_repository import 
 from app.modules.knowledge.infrastructure.repositories.regulation_repository import RegulationRepository
 from app.modules.knowledge.infrastructure.repositories.sensor_repository import SensorRepository
 from app.modules.knowledge.infrastructure.repositories.worker_repository import WorkerRepository
+from app.modules.knowledge.infrastructure.repositories.traversal_repository import TraversalRepository
+from app.modules.knowledge.infrastructure.repositories.analytics_repository import AnalyticsRepository
+from app.modules.knowledge.infrastructure.repositories.ontology_repository import OntologyRepository
+from app.modules.knowledge.infrastructure.repositories.history_repository import HistoryRepository
 
 __all__ = [
     "BaseNeo4jRepository",
@@ -18,4 +22,8 @@ __all__ = [
     "PermitRepository",
     "SensorRepository",
     "RegulationRepository",
+    "TraversalRepository",
+    "AnalyticsRepository",
+    "OntologyRepository",
+    "HistoryRepository",
 ]

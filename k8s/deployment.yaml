@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abhedya-ai-core
+  namespace: abhedya
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: abhedya-ai-core
+  template:
+    metadata:
+      labels:
+        app: abhedya-ai-core
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: abhedya-ai-core
+      containers:
+        - name: abhedya-ai-core
+          image: abhedya-ai-core:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: abhedya-config
+            - secretRef:
+                name: abhedya-secrets
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/platform/health/ready
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10

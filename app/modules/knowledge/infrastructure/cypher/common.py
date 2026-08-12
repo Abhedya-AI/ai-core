@@ -10,7 +10,7 @@ RETURN n
 """
 
 MERGE_NODE = """
-MERGE (n:{label} {id: $id})
+MERGE (n:{label} {{id: $id}})
 SET n += $properties
 RETURN n
 """
@@ -76,4 +76,66 @@ SHORTEST_PATH = """
 MATCH (start {id: $start_node_id}), (target {id: $target_node_id})
 MATCH path = shortestPath((start)-[*..10]-(target))
 RETURN path
+"""
+
+# Schema management
+CREATE_UNIQUE_CONSTRAINT = """
+CREATE CONSTRAINT {constraint_name} IF NOT EXISTS
+FOR (n:{label}) REQUIRE n.id IS UNIQUE
+"""
+
+CREATE_FULLTEXT_INDEX = """
+CREATE FULLTEXT INDEX {index_name} IF NOT EXISTS
+FOR (n:{label}) ON EACH [n.name, n.title, n.code, n.description]
+"""
+
+LIST_CONSTRAINTS = """
+SHOW CONSTRAINTS YIELD name, type, labelsOrTypes, properties
+RETURN name, type, labelsOrTypes, properties
+"""
+
+LIST_INDEXES = """
+SHOW INDEXES YIELD name, type, labelsOrTypes, properties, state
+RETURN name, type, labelsOrTypes, properties, state
+"""
+
+DROP_CONSTRAINT = """
+DROP CONSTRAINT {constraint_name} IF EXISTS
+"""
+
+FIND_NODES_BY_LABEL = """
+MATCH (n:{label})
+RETURN n
+SKIP $skip
+LIMIT $limit
+"""
+
+FIND_NODES_BY_LABEL_ORDERED = """
+MATCH (n:{label})
+RETURN n
+ORDER BY n.created_at DESC
+SKIP $skip
+LIMIT $limit
+"""
+
+GET_ALL_RELATIONSHIPS = """
+MATCH (s)-[r]-(t)
+RETURN s, r, t, type(r) AS rel_type
+SKIP $skip
+LIMIT $limit
+"""
+
+GET_RELATIONSHIPS_BETWEEN = """
+MATCH (s {id: $source_id})-[r]-(t {id: $target_id})
+RETURN r, type(r) AS rel_type, properties(r) AS props
+"""
+
+COUNT_RELATIONSHIPS = """
+MATCH ()-[r]->()
+RETURN count(r) AS count
+"""
+
+COUNT_RELATIONSHIPS_FOR_NODE = """
+MATCH (n {id: $node_id})-[r]-()
+RETURN count(r) AS count
 """

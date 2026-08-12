@@ -91,6 +91,21 @@ class EventBus:
         Returns:
             True on success, False on failure (logs the error, never raises).
         """
+        # Forward every event to EventBridge for real-time WS/SSE streaming
+        try:
+            from app.core.events.bridge import get_event_bridge
+            event_data = {
+                "topic": topic,
+                "key": key,
+                "payload": payload,
+                "event_type": payload.get("event_type", topic),
+                "severity": payload.get("severity", "INFO"),
+            }
+            await get_event_bridge().broadcast_event(event_data)
+        except Exception as bridge_exc:
+            log.debug(f"EventBridge forward failed: {bridge_exc}")
+
+
         if not settings.kafka.enabled or self._producer is None:
             log.debug(f"[no-op] Kafka event: {topic} → {payload}")
             return True
@@ -111,3 +126,4 @@ class EventBus:
         except Exception as exc:
             log.error(f"Failed to publish event to {topic!r}: {exc}")
             return False
+

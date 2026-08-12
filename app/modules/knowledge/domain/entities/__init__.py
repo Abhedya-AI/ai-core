@@ -27,6 +27,19 @@ from app.modules.knowledge.domain.entities.visitor import Visitor
 from app.modules.knowledge.domain.entities.weather import Weather
 from app.modules.knowledge.domain.entities.worker import Worker
 from app.modules.knowledge.domain.entities.zone import Zone
+from app.modules.knowledge.domain.entities.extended_entities import (
+    Alert,
+    Device,
+    Emergency,
+    Inspection,
+    Plant,
+    Policy,
+    PPE,
+    Reading,
+    Recommendation,
+    Risk,
+    Standard,
+)
 
 __all__ = [
     "GraphEntity",
@@ -56,4 +69,15 @@ __all__ = [
     "Weather",
     "Prediction",
     "Notification",
+    "Plant",
+    "Reading",
+    "Alert",
+    "Emergency",
+    "Inspection",
+    "Risk",
+    "Recommendation",
+    "Policy",
+    "Standard",
+    "PPE",
+    "Device",
 ]

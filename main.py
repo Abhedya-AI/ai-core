@@ -52,17 +52,21 @@ app = FastAPI(
 # CORSMiddleware must be innermost (registered last) so preflight OPTIONS
 # responses are generated before auth/rate-limit middleware see them.
 
+from app.core.security.headers import SecurityHeadersMiddleware
+
 app.add_middleware(CORSMiddleware,
     allow_origins=settings.security.allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(MetricsMiddleware)
 app.add_middleware(ErrorHandlerMiddleware)
+
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -83,6 +87,14 @@ app.include_router(
 )
 
 
+from fastapi.staticfiles import StaticFiles
+import os
+
+# Mount Control Room Dashboard UI
+if os.path.exists("static"):
+    app.mount("/dashboard", StaticFiles(directory="static", html=True), name="dashboard")
+
+
 @app.get("/", tags=["Root"], summary="Application status", operation_id="root_status")
 async def root():
     """Return basic application identity, version, and status."""
@@ -92,10 +104,12 @@ async def root():
         "sprint": "Sprint 4 — Production Platform",
         "status": "running",
         "environment": settings.app.environment,
+        "dashboard": "/dashboard",
         "docs": "/docs",
         "health": "/health",
         "api": settings.app.api_prefix,
     }
+
 
 
 # ── Dev runner ─────────────────────────────────────────────────────────────────

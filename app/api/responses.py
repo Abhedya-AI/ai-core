@@ -99,16 +99,19 @@ class PaginatedResponse(BaseModel, Generic[T]):
 
 def make_response(
     data: T,
-    trace_id: str,
-    request_id: str,
+    trace_id: str = "trace-default",
+    request_id: str = "req-default",
     execution_time_ms: int = 0,
+    meta: Any = None,
 ) -> StandardResponse[T]:
     """Convenience factory for StandardResponse."""
+    t_id = getattr(meta, 'trace_id', trace_id) if meta else trace_id
+    r_id = getattr(meta, 'request_id', request_id) if meta else request_id
     return StandardResponse(
         data=data,
         metadata=ResponseMetadata(
-            trace_id=trace_id,
-            request_id=request_id,
+            trace_id=str(t_id),
+            request_id=str(r_id),
             execution_time_ms=execution_time_ms,
         ),
     )

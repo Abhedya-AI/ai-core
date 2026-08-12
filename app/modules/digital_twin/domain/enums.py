@@ -1,0 +1,157 @@
+from __future__ import annotations
+from enum import Enum
+
+class TwinStatus(str, Enum):
+    INITIALIZING = "INITIALIZING"
+    ACTIVE = "ACTIVE"
+    DEGRADED = "DEGRADED"
+    OFFLINE = "OFFLINE"
+    MAINTENANCE = "MAINTENANCE"
+    ARCHIVED = "ARCHIVED"
+
+class SyncMode(str, Enum):
+    REAL_TIME = "REAL_TIME"
+    BATCH = "BATCH"
+    ON_DEMAND = "ON_DEMAND"
+    SCHEDULED = "SCHEDULED"
+
+class SyncSource(str, Enum):
+    SENSOR = "SENSOR"
+    VISION = "VISION"
+    KNOWLEDGE_GRAPH = "KNOWLEDGE_GRAPH"
+    RISK = "RISK"
+    FORECAST = "FORECAST"
+    HAZARD = "HAZARD"
+    ROOT_CAUSE = "ROOT_CAUSE"
+    SUPERVISOR = "SUPERVISOR"
+    WORKFLOW = "WORKFLOW"
+    MANUAL = "MANUAL"
+
+class SyncStatus(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    STALE = "STALE"
+
+class SimulationType(str, Enum):
+    WHAT_IF = "WHAT_IF"
+    EMERGENCY = "EMERGENCY"
+    HAZARD_REPLAY = "HAZARD_REPLAY"
+    MAINTENANCE = "MAINTENANCE"
+    SHUTDOWN = "SHUTDOWN"
+    PRODUCTION = "PRODUCTION"
+    WORKER_MOVEMENT = "WORKER_MOVEMENT"
+    EQUIPMENT_FAILURE = "EQUIPMENT_FAILURE"
+    POWER_LOSS = "POWER_LOSS"
+    CUSTOM = "CUSTOM"
+
+class SimulationStatus(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    PAUSED = "PAUSED"
+
+class ScenarioType(str, Enum):
+    BEST_CASE = "BEST_CASE"
+    EXPECTED_CASE = "EXPECTED_CASE"
+    WORST_CASE = "WORST_CASE"
+    CUSTOM = "CUSTOM"
+    USER_DEFINED = "USER_DEFINED"
+
+class OptimizationTarget(str, Enum):
+    EVACUATION = "EVACUATION"
+    SHUTDOWN = "SHUTDOWN"
+    MAINTENANCE_SCHEDULE = "MAINTENANCE_SCHEDULE"
+    WORKER_ALLOCATION = "WORKER_ALLOCATION"
+    EQUIPMENT_USAGE = "EQUIPMENT_USAGE"
+    RESOURCE_DEPLOYMENT = "RESOURCE_DEPLOYMENT"
+    CONTAINMENT = "CONTAINMENT"
+
+class OptimizationStatus(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+class ReplayStatus(str, Enum):
+    PENDING = "PENDING"
+    PLAYING = "PLAYING"
+    PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+class PlanType(str, Enum):
+    MAINTENANCE = "MAINTENANCE"
+    EMERGENCY = "EMERGENCY"
+    INSPECTION = "INSPECTION"
+    RESOURCE = "RESOURCE"
+    RECOVERY = "RECOVERY"
+    BUSINESS_CONTINUITY = "BUSINESS_CONTINUITY"
+
+class TwinEventType(str, Enum):
+    STATE_CHANGED = "STATE_CHANGED"
+    SYNC_COMPLETED = "SYNC_COMPLETED"
+    ANOMALY_DETECTED = "ANOMALY_DETECTED"
+    THRESHOLD_BREACHED = "THRESHOLD_BREACHED"
+    ENTITY_ADDED = "ENTITY_ADDED"
+    ENTITY_REMOVED = "ENTITY_REMOVED"
+    SIMULATION_TRIGGERED = "SIMULATION_TRIGGERED"
+    OPTIMIZATION_TRIGGERED = "OPTIMIZATION_TRIGGERED"
+    ALERT_RAISED = "ALERT_RAISED"
+
+class HealthStatus(str, Enum):
+    HEALTHY = "HEALTHY"
+    DEGRADED = "DEGRADED"
+    CRITICAL = "CRITICAL"
+    UNKNOWN = "UNKNOWN"
+
+    @classmethod
+    def from_score(cls, score: float) -> HealthStatus:
+        if score >= 0.8: return cls.HEALTHY
+        if score >= 0.5: return cls.DEGRADED
+        if score >= 0.0: return cls.CRITICAL
+        return cls.UNKNOWN
+
+class EntityType(str, Enum):
+    PLANT = "PLANT"
+    BUILDING = "BUILDING"
+    FLOOR = "FLOOR"
+    ZONE = "ZONE"
+    EQUIPMENT = "EQUIPMENT"
+    WORKER = "WORKER"
+    SENSOR = "SENSOR"
+    CAMERA = "CAMERA"
+    HAZARD = "HAZARD"
+    RESOURCE = "RESOURCE"
+    PIPELINE = "PIPELINE"
+    UTILITY = "UTILITY"
+
+class StateTransitionReason(str, Enum):
+    SENSOR_UPDATE = "SENSOR_UPDATE"
+    VISION_UPDATE = "VISION_UPDATE"
+    RISK_UPDATE = "RISK_UPDATE"
+    FORECAST_UPDATE = "FORECAST_UPDATE"
+    HAZARD_UPDATE = "HAZARD_UPDATE"
+    MANUAL_OVERRIDE = "MANUAL_OVERRIDE"
+    SIMULATION_RESULT = "SIMULATION_RESULT"
+    OPTIMIZATION_RESULT = "OPTIMIZATION_RESULT"
+    SYSTEM_DETECTED = "SYSTEM_DETECTED"
+    ROLLBACK = "ROLLBACK"
+
+class ConfidenceLevel(str, Enum):
+    VERY_LOW = "VERY_LOW"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    VERY_HIGH = "VERY_HIGH"
+
+    @classmethod
+    def from_score(cls, score: float) -> ConfidenceLevel:
+        if score < 0.2: return cls.VERY_LOW
+        if score < 0.4: return cls.LOW
+        if score < 0.6: return cls.MEDIUM
+        if score < 0.8: return cls.HIGH
+        return cls.VERY_HIGH

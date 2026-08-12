@@ -128,6 +128,51 @@ _RULES: dict[RelationshipType, RelationshipRule] = {
         allowed_sources={"Notification", "Prediction"},
         allowed_targets={"Worker"},
     ),
+    RelationshipType.TRIGGERED: RelationshipRule(
+        rel_type=RelationshipType.TRIGGERED,
+        allowed_sources={"Sensor", "Camera", "Reading", "Alert", "Hazard", "Incident"},
+        allowed_targets={"Alert", "Incident", "Emergency", "Notification"},
+    ),
+    RelationshipType.NEAR: RelationshipRule(
+        rel_type=RelationshipType.NEAR,
+        allowed_sources={"Worker", "Equipment", "Sensor", "Hazard", "Zone"},
+        allowed_targets={"Worker", "Equipment", "Sensor", "Hazard", "Zone"},
+    ),
+    RelationshipType.OPERATED_BY: RelationshipRule(
+        rel_type=RelationshipType.OPERATED_BY,
+        allowed_sources={"Equipment", "Asset", "Device"},
+        allowed_targets={"Worker", "Contractor"},
+    ),
+    RelationshipType.HAS_RISK: RelationshipRule(
+        rel_type=RelationshipType.HAS_RISK,
+        allowed_sources={"Equipment", "Asset", "Zone", "Plant", "Building", "Floor", "Worker", "Inspection"},
+        allowed_targets={"Risk", "Hazard"},
+    ),
+    RelationshipType.PREVENTS: RelationshipRule(
+        rel_type=RelationshipType.PREVENTS,
+        allowed_sources={"PPE", "Maintenance", "Policy", "Standard", "Emergency", "Permit"},
+        allowed_targets={"Hazard", "Incident", "Risk"},
+    ),
+    RelationshipType.ASSOCIATED_WITH: RelationshipRule(
+        rel_type=RelationshipType.ASSOCIATED_WITH,
+        allowed_sources={"Plant", "Building", "Floor", "Zone", "Equipment", "Sensor", "Worker", "Reading", "Incident", "Alert", "Hazard", "Emergency", "Maintenance", "Inspection", "Risk", "Recommendation", "Policy", "Standard", "PPE", "Device"},
+        allowed_targets={"Plant", "Building", "Floor", "Zone", "Equipment", "Sensor", "Worker", "Reading", "Incident", "Alert", "Hazard", "Emergency", "Maintenance", "Inspection", "Risk", "Recommendation", "Policy", "Standard", "PPE", "Device"},
+    ),
+    RelationshipType.RESPONDED_BY: RelationshipRule(
+        rel_type=RelationshipType.RESPONDED_BY,
+        allowed_sources={"Incident", "Emergency", "Alert", "Hazard"},
+        allowed_targets={"Worker", "Emergency"},
+    ),
+    RelationshipType.INSPECTED_BY: RelationshipRule(
+        rel_type=RelationshipType.INSPECTED_BY,
+        allowed_sources={"Equipment", "Zone", "Plant", "Building", "Floor", "PPE", "Sensor"},
+        allowed_targets={"Worker", "Inspection"},
+    ),
+    RelationshipType.PROTECTS: RelationshipRule(
+        rel_type=RelationshipType.PROTECTS,
+        allowed_sources={"PPE", "Policy", "Standard", "Emergency"},
+        allowed_targets={"Worker", "Zone", "Equipment", "Plant"},
+    ),
 }
 
 

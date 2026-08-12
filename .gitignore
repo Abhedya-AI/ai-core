@@ -62,3 +62,5 @@ models/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+k8s/secret.yaml
